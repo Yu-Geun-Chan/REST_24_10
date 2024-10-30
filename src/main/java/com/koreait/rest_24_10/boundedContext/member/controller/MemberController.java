@@ -1,16 +1,15 @@
 package com.koreait.rest_24_10.boundedContext.member.controller;
 
-import com.koreait.rest_24_10.boundedContext.member.entity.Member;
 import com.koreait.rest_24_10.boundedContext.member.service.MemberService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import jakarta.validation.constraints.NotBlank;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -18,7 +17,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping(value = "/member", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class MemberController {
+
     private final MemberService memberService;
+
     @Data
     public static class LoginRequest {
         @NotBlank
@@ -26,11 +27,22 @@ public class MemberController {
         @NotBlank
         private String password;
     }
+
     @PostMapping("/login")
-    public Member login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse resp) {
+    public String login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse resp) {
+        String accessToken = memberService.genAccessToken(loginRequest.getUsername(), loginRequest.getPassword());
 
-        resp.addHeader("Authorization", "JWT 토큰");
+        resp.addHeader("Authentication", accessToken);
 
-        return memberService.findByUsername(loginRequest.getUsername()).orElse(null);
+        return """
+                {
+                "resultCode" : "S-1",
+                "msg" : "엑세스 토큰이 생성되었습니다.",
+                "data" : {
+                    "AccessToken" : + "%s"
+                    } 
+                }
+                """.formatted(accessToken).stripIndent(); // stripIndent() : 공백 제거
     }
+
 }
