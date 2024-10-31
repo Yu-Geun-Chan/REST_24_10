@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,14 +51,23 @@ public class MemberControllerTests {
                 .andExpect(jsonPath("$.resultCode").value("S-1"))
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.data.accessToken").exists());
+    }
 
-//        MvcResult mvcResult = resultActions.andReturn();
+    @Test
+    @DisplayName("GET /member/me 는 myPage")
+    void t2() throws Exception {
+        //When
+        ResultActions resultActions = mvc.perform(
+                        get("/api/v1/member/me")
+                )
+                .andDo(print());
 
-//        MockHttpServletResponse response = mvcResult.getResponse();
-
-//        String authentication = response.getHeader("Authentication");
-
-//        assertThat(authentication).isNotEmpty();
+        //Then
+        resultActions.andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.resultCode").value("S-1"))
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.data.member.id").exists())
+                .andExpect(jsonPath("$.data.member.username").exists());
     }
 
 
